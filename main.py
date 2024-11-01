@@ -177,7 +177,7 @@ def send_daily():
 
 
 # Планируем отправку в 12 ночи
-schedule.every().day.at("15:13").do(send_daily)
+schedule.every().day.at("00:00").do(send_daily)
 
 
 def run_schedule():
