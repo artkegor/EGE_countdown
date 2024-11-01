@@ -166,14 +166,18 @@ def callback(call):
 def send_daily():
     users = db.get_all_users()
     for user in users:
-        subjects = user['subjects']
-        if subjects:
-            message = '<b>Дней до экзаменов:</b>\n\n'
-            for subject in subjects:
-                exam_date = exam_dates[subject['name']]
-                days_till_exam = (exam_date - datetime.now()).days
-                message += f'{subject_buttons[subject["name"]][0]}: {days_till_exam} дней.\n\n'
-            bot.send_message(user['id'], message, parse_mode='html')
+        time.sleep(0.1)
+        try:
+            subjects = user['subjects']
+            if subjects:
+                message = '<b>Дней до экзаменов:</b>\n\n'
+                for subject in subjects:
+                    exam_date = exam_dates[subject['name']]
+                    days_till_exam = (exam_date - datetime.now()).days
+                    message += f'{subject_buttons[subject["name"]][0]}: {days_till_exam} дней.\n\n'
+                bot.send_message(user['id'], message, parse_mode='html')
+        except:
+            continue
 
 
 # Планируем отправку в 12 ночи
