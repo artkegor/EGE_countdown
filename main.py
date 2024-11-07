@@ -47,6 +47,17 @@ exam_dates = {
     "lan": datetime(2025, 6, 5)
 }
 
+# Функция для определения правильной формы числительного
+words = ['день', 'дня', 'дней']
+
+
+def get_noun(days):
+    if all((days % 10 == 1, days % 100 != 11)):
+        return words[0]
+    elif all((2 <= days % 10 <= 4, any((days % 100 < 10, days % 100 >= 20)))):
+        return words[1]
+    return words[2]
+
 
 # Клавиатура с предметами
 def subjects_markup(subjects):
@@ -153,6 +164,7 @@ def callback(call):
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text='Теперь ровно в полночь ты будешь получать уведомление с количеством дней до экзаменов.\n\n'
                                    'Удачи в подготовке!', reply_markup=markup)
+
     elif call.data == 'change':
         subjects = db.get_subjects(call.message.chat.id)
         markup = subjects_markup(subjects)
@@ -172,9 +184,19 @@ def send_daily():
             if subjects:
                 message = '<b>Дней до экзаменов:</b>\n\n'
                 for subject in subjects:
+                    # Вычисляем дни
                     exam_date = exam_dates[subject['name']]
                     days_till_exam = (exam_date - datetime.now()).days
-                    message += f'{subject_buttons[subject["name"]][0]}: {days_till_exam} дней.\n\n'
+
+                    # Ловим особые случаи по экзаменам
+                    if days_till_exam == 0:
+                        message += f'{subject_buttons[subject["name"]][0]}: завтра.\n\n'
+                    elif days_till_exam == -1:
+                        message += f'{subject_buttons[subject["name"]][0]}: сегодня.\n\n'
+                    elif days_till_exam < -1:
+                        continue
+                    else:
+                        message += f'{subject_buttons[subject["name"]][0]}: {days_till_exam} {get_noun(days_till_exam)}.\n\n'
                 bot.send_message(user['id'], message, parse_mode='html')
         except:
             continue
