@@ -247,6 +247,7 @@ def get_text(message):
                 bot.copy_message(user['id'], message.chat.id, message.message_id)
             except:
                 continue
+    print('Done')
 
 
 bot.infinity_polling()
