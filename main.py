@@ -129,6 +129,15 @@ def subjects_markup(subjects):
     return markup
 
 
+# Клавиатура для админа
+def admin_markup():
+    markup = types.InlineKeyboardMarkup()
+
+    markup.add(types.InlineKeyboardButton('Новая рассылка 📄', callback_data='sender'))
+
+    return markup
+
+
 # Команда /start
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -172,6 +181,10 @@ def callback(call):
         bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
                               text='Привет!\n'
                                    'Выбери предметы, которые ты сдаешь...', reply_markup=markup)
+    elif call.data == 'sender':
+        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+                              text='Введи текст рассылки, чтобы отменить введи слово "стоп"...')
+        bot.register_next_step_handler(call.message, lambda message: get_text(message))
 
 
 # Рассылка
@@ -219,7 +232,21 @@ threading.Thread(target=run_schedule, daemon=True).start()
 @bot.message_handler(commands=['admin'])
 def admin(message):
     if message.chat.id == ADMIN:
-        bot.send_message(message.chat.id, f'Количество пользователей: {db.count_users()}')
+        markup = admin_markup()
+        bot.send_message(message.chat.id, f'Количество пользователей: {db.count_users()}', reply_markup=markup)
+
+
+# Рассылка для админа
+def get_text(message):
+    if message.text == 'стоп':
+        return
+    else:
+        users = db.get_all_users()
+        for user in users:
+            try:
+                bot.copy_message(user['id'], message.chat.id, message.message_id)
+            except:
+                continue
 
 
 bot.infinity_polling()
