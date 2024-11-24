@@ -243,6 +243,7 @@ def get_text(message):
     else:
         users = db.get_all_users()
         for user in users:
+            time.sleep(0.1)
             try:
                 bot.copy_message(user['id'], message.chat.id, message.message_id)
             except:
